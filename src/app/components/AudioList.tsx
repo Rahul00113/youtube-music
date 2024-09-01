@@ -1,8 +1,11 @@
-import React from 'react';
-import { List, ListItemText, Box, Typography } from '@mui/material';
-import { styled } from '@mui/material/styles';
+"use client"
 
-// Custom styled component
+import React from 'react';
+import { List, ListItemText, Box, IconButton, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import EditIcon from '@mui/icons-material/Edit';
+
+// Custom styled component for list items
 const CustomListItem = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -13,16 +16,32 @@ const CustomListItem = styled(Box)(({ theme }) => ({
   },
 }));
 
+// Container for list item content with 85% width
+const ListItemContent = styled(Box)(({ theme }) => ({
+  flex: '0 0 85%',
+  display: 'flex',
+  alignItems: 'center',
+}));
+
+// Edit button container with the remaining width
+const EditButtonContainer = styled(Box)(({ theme }) => ({
+  flex: '0 0 15%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-end', // Align button to the right
+}));
+
 interface AudioFile {
   title: string;
   src: string;
-  duration: number;  // Duration in seconds
+  duration: number;
 }
 
 interface AudioListProps {
   audioFiles: AudioFile[];
   onSelect: (src: string) => void;
   currentAudio: string;
+  onEdit: (file: AudioFile) => void;  // Callback for edit button
 }
 
 const formatDuration = (seconds: number) => {
@@ -37,28 +56,34 @@ const formatDuration = (seconds: number) => {
   return `${hoursStr}${minutesStr}:${secondsStr}`;
 };
 
-const AudioList: React.FC<AudioListProps> = ({ audioFiles, onSelect, currentAudio }) => {
+const AudioList: React.FC<AudioListProps> = ({ audioFiles, onSelect, currentAudio, onEdit }) => {
   return (
     <List>
       {audioFiles.map((file, index) => (
         <CustomListItem
           key={index}
-          onClick={() => onSelect(file.src)}
           sx={{
             backgroundColor: currentAudio === file.src ? 'primary.main' : 'background.paper',
             color: currentAudio === file.src ? 'green' : 'blue',
           }}
         >
-          <ListItemText
-            primary={
-              <Typography>
-                {file.title}
-                <Typography variant="body2" color="textSecondary">
-                  {formatDuration(file.duration)}
+          <ListItemContent onClick={() => onSelect(file.src)}>
+            <ListItemText
+              primary={
+                <Typography>
+                  {file.title}
+                  <Typography variant="body2" color="textSecondary">
+                    {formatDuration(file.duration)}
+                  </Typography>
                 </Typography>
-              </Typography>
-            }
-          />
+              }
+            />
+          </ListItemContent>
+          <EditButtonContainer>
+            <IconButton onClick={() => onEdit(file)}>
+              <EditIcon />
+            </IconButton>
+          </EditButtonContainer>
         </CustomListItem>
       ))}
     </List>

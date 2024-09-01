@@ -7,26 +7,29 @@ import AudioGrid from '@/app/components/AudioGrid';
 import ToggleViewButton from '@/app/components/ToggleViewButton';
 import { Container, Box, Modal, Typography, IconButton, Button, Stack, TextField } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-
+import EditIcon from '@mui/icons-material/Edit';
 
 const audioFiles = [
-  { title: 'God Damn', src: '/audio/god_damn.mp3', image: '/images/god_damn.jpg' , duration: 233.534694},
-  { title: 'Tauba Tauba', src: '/audio/Tauba.mp3', image: '/images/Tauba.jpg' , duration: 228.675918 }
+  { title: 'God Damn', src: '/audio/god_damn.mp3', image: '/images/god_damn.jpg', duration: 233.534694 },
+  { title: 'Tauba Tauba', src: '/audio/Tauba.mp3', image: '/images/Tauba.jpg', duration: 228.675918 }
 ];
+
 const Home = () => {
-  const storedFiles = JSON.parse(localStorage.getItem('audioFiles') || '[]');
   const [isGridView, setIsGridView] = useState(false);
   const [currentAudio, setCurrentAudio] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState(audioFiles);
-  console.log('........storedFiles......', storedFiles)
+  const [selectedFile, setSelectedFile] = useState<{ title: string; src: string } | null>(null);
+  const [newFileName, setNewFileName] = useState('');
+  const storedFiles = JSON.parse(localStorage.getItem('audioFiles') || '[]');
+
   useEffect(() => {
-    if (storedFiles?.length == 0) {
+    if (storedFiles.length === 0) {
       localStorage.setItem('audioFiles', JSON.stringify(audioFiles));
     }
-    setUploadedFiles(storedFiles)
-  }, [JSON.stringify(storedFiles)])
-
+    setUploadedFiles(storedFiles);
+  }, [JSON.stringify(storedFiles)]);
 
   const handleToggleView = () => setIsGridView(!isGridView);
 
@@ -37,19 +40,27 @@ const Home = () => {
   };
 
   const handleNextAudio = () => {
-    const currentIndex = audioFiles.findIndex(file => file.src === currentAudio);
-    const nextIndex = (currentIndex + 1) % audioFiles.length;
-    setCurrentAudio(audioFiles[nextIndex].src);
+    const currentIndex = uploadedFiles.findIndex(file => file.src === currentAudio);
+    const nextIndex = (currentIndex + 1) % uploadedFiles.length;
+    setCurrentAudio(uploadedFiles[nextIndex].src);
   };
 
   const handlePreviousAudio = () => {
-    const currentIndex = audioFiles.findIndex(file => file.src === currentAudio);
-    const previousIndex = (currentIndex - 1 + audioFiles.length) % audioFiles.length;
-    setCurrentAudio(audioFiles[previousIndex].src);
+    const currentIndex = uploadedFiles.findIndex(file => file.src === currentAudio);
+    const previousIndex = (currentIndex - 1 + uploadedFiles.length) % uploadedFiles.length;
+    setCurrentAudio(uploadedFiles[previousIndex].src);
   };
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
+
+  const handleOpenRenameModal = (file: { title: string; src: string }) => {
+    setSelectedFile(file);
+    setNewFileName(file.title);
+    setIsRenameModalOpen(true);
+  };
+
+  const handleCloseRenameModal = () => setIsRenameModalOpen(false);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -58,23 +69,34 @@ const Home = () => {
       try {
         const audio = new Audio(URL.createObjectURL(file));
         audio.onloadedmetadata = () => {
-          const duration = audio.duration;  // Duration in seconds
+          const duration = audio.duration;
 
           const newFile = {
             title: file.name,
             src: URL.createObjectURL(file),
-            image: '/images/Tauba.jpg',  // Default image for uploaded files
-            duration: duration,  // Add duration to the file object
+            image: '/images/Tauba.jpg',
+            duration: duration,
           };
-          // Save to localStorage
-          localStorage.setItem('audioFiles', JSON.stringify([...storedFiles, newFile]));
-          console.log('.......file......', file)
-          setUploadedFiles(prevFiles => [...prevFiles, newFile]);
+
+          const updatedFiles = [...uploadedFiles, newFile];
+          localStorage.setItem('audioFiles', JSON.stringify(updatedFiles));
+          setUploadedFiles(updatedFiles);
           handleCloseModal();
-        }
+        };
       } catch (error) {
         console.error('Error uploading file:', error);
       }
+    }
+  };
+
+  const handleRenameFile = () => {
+    if (selectedFile) {
+      const updatedFiles = uploadedFiles.map(file =>
+        file.src === selectedFile.src ? { ...file, title: newFileName } : file
+      );
+      localStorage.setItem('audioFiles', JSON.stringify(updatedFiles));
+      setUploadedFiles(updatedFiles);
+      handleCloseRenameModal();
     }
   };
 
@@ -93,7 +115,12 @@ const Home = () => {
         {isGridView ? (
           <AudioGrid audioFiles={uploadedFiles} onSelect={handleAudioSelect} currentAudio={currentAudio} />
         ) : (
-          <AudioList audioFiles={uploadedFiles} onSelect={handleAudioSelect} currentAudio={currentAudio} />
+          <AudioList
+            audioFiles={uploadedFiles}
+            onSelect={handleAudioSelect}
+            currentAudio={currentAudio}
+            onEdit={handleOpenRenameModal}  // Pass edit handler
+          />
         )}
         {/* Audio Player */}
         {currentAudio && (
@@ -130,6 +157,39 @@ const Home = () => {
             <Button variant="contained" color="primary" onClick={handleCloseModal}>
               Close
             </Button>
+          </Stack>
+        </Box>
+      </Modal>
+      {/* Modal for Renaming Audio Files */}
+      <Modal open={isRenameModalOpen} onClose={handleCloseRenameModal}>
+        <Box sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+          p: 4,
+          width: 400
+        }}>
+          <Typography variant="h6" component="h2">
+            Rename Audio File
+          </Typography>
+          <Stack spacing={2} mt={2}>
+            <TextField
+              label="New File Name"
+              value={newFileName}
+              onChange={(e) => setNewFileName(e.target.value)}
+              fullWidth
+            />
+            <Stack direction="row" spacing={2}>
+              <Button variant="contained" color="primary" onClick={handleRenameFile}>
+                Rename
+              </Button>
+              <Button variant="outlined" onClick={handleCloseRenameModal}>
+                Cancel
+              </Button>
+            </Stack>
           </Stack>
         </Box>
       </Modal>
