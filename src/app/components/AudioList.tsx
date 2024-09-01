@@ -1,5 +1,17 @@
 import React from 'react';
-import { List, ListItem, ListItemText, Box } from '@mui/material';
+import { List, ListItemText, Box } from '@mui/material';
+import { styled } from '@mui/material/styles';
+
+// Custom styled component
+const CustomListItem = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: theme.spacing(1),
+  cursor: 'pointer',
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+  },
+}));
 
 interface AudioListProps {
   audioFiles: { title: string; src: string }[];
@@ -11,9 +23,8 @@ const AudioList: React.FC<AudioListProps> = ({ audioFiles, onSelect, currentAudi
   return (
     <List>
       {audioFiles.map((file, index) => (
-        <ListItem
+        <CustomListItem
           key={index}
-          button
           onClick={() => onSelect(file.src)}
           sx={{
             backgroundColor: currentAudio === file.src ? 'primary.main' : 'background.paper',
@@ -21,7 +32,7 @@ const AudioList: React.FC<AudioListProps> = ({ audioFiles, onSelect, currentAudi
           }}
         >
           <ListItemText primary={file.title} />
-        </ListItem>
+        </CustomListItem>
       ))}
     </List>
   );
