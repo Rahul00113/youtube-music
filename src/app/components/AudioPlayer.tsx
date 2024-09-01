@@ -1,5 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Box, Button, Stack } from '@mui/material';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
 interface AudioPlayerProps {
   audioSrc: string;
@@ -24,7 +26,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioSrc, onEnded, onNext, on
         bottom: 0,
         left: 0,
         width: '100%',
-        bgcolor: 'background.paper',
+        bgcolor: 'rgb(35, 88, 66 , 0.5)',
         boxShadow: 3,
         zIndex: 1000,
         p: 2,
@@ -32,11 +34,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioSrc, onEnded, onNext, on
     >
       <Stack direction="row" spacing={2} alignItems="center" justifyContent="center">
         <Button variant="contained" color="secondary" onClick={onPrevious}>
-          Previous
+      <ArrowBackIosNewIcon />
         </Button>
         <audio ref={audioRef} src={audioSrc} onEnded={onEnded} controls style={{ width: '60%' }} />
         <Button variant="contained" color="primary" onClick={onNext}>
-          Next
+        <ArrowForwardIosIcon />
         </Button>
       </Stack>
     </Box>

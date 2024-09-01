@@ -7,6 +7,7 @@ import AudioGrid from '@/app/components/AudioGrid';
 import ToggleViewButton from '@/app/components/ToggleViewButton';
 import { Container, Box, Modal, Typography, IconButton, Button, Stack, TextField } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import getFileNameWithoutExtension from '../../utils/Utils';
 
 const audioFiles = [
   { title: 'God Damn', src: '/audio/god_damn.mp3', image: '/images/god_damn.jpg', duration: 233.534694 },
@@ -22,16 +23,21 @@ const Home = () => {
   const [selectedFile, setSelectedFile] = useState<{ title: string; src: string } | null>(null);
   const [newFileName, setNewFileName] = useState('');
   
-  useEffect(() => {
-    if(typeof window !== 'undefined'){
+
+  const getStoredFiles = () => {
+    if (typeof window !== 'undefined') {
       const storedFiles = JSON.parse(localStorage.getItem('audioFiles') || '[]');
-      
       if (storedFiles.length === 0) {
         localStorage.setItem('audioFiles', JSON.stringify(audioFiles));
       }
-      setUploadedFiles(storedFiles);
+      return storedFiles;
     }
-  }, [JSON.stringify(storedFiles)]);
+    return [];
+  };
+  
+  useEffect(() => {
+    setUploadedFiles(getStoredFiles());
+  }, []);
 
   const handleToggleView = () => setIsGridView(!isGridView);
 
@@ -73,10 +79,12 @@ const Home = () => {
         audio.onloadedmetadata = () => {
           const duration = audio.duration;
 
+          const fileName = getFileNameWithoutExtension(file.name);
+
           const newFile = {
-            title: file.name,
+            title: fileName,
             src: URL.createObjectURL(file),
-            image: '/images/Tauba.jpg',
+            image: '/images/default.png',
             duration: duration,
           };
           const updatedFiles = [...uploadedFiles, newFile];
@@ -105,13 +113,16 @@ const Home = () => {
     <Container>
       <Box sx={{ textAlign: 'center', paddingTop: 4 }}>
         {/* Plus Icon Button to Open Modal */}
-        <Box sx={{ textAlign: 'right' }}>
+        <Box sx={{ textAlign: 'right' ,alignItems:'center'}}>
           <IconButton color="primary" onClick={handleOpenModal}>
+        <Typography style={{ marginLeft: '20px' }}>Add Song</Typography>
             <AddIcon />
           </IconButton>
         </Box>
         {/* Toggle View Button */}
+        <Box sx={{ textAlign: 'right' ,alignItems:'center'}}>
         <ToggleViewButton onToggle={handleToggleView} isGridView={isGridView} />
+        </Box>
         {/* Audio List or Grid */}
         {isGridView ? (
           <AudioGrid audioFiles={uploadedFiles} onSelect={handleAudioSelect} currentAudio={currentAudio} />
@@ -143,7 +154,8 @@ const Home = () => {
           bgcolor: 'background.paper',
           boxShadow: 24,
           p: 4,
-          width: 400
+          width: 400,
+          borderRadius:3
         }}>
           <Typography variant="h6" component="h2">
             Upload Audio File
@@ -171,7 +183,8 @@ const Home = () => {
           bgcolor: 'background.paper',
           boxShadow: 24,
           p: 4,
-          width: 400
+          width: 400,
+          borderRadius:3
         }}>
           <Typography variant="h6" component="h2">
             Rename Audio File
@@ -187,7 +200,7 @@ const Home = () => {
               <Button variant="contained" color="primary" onClick={handleRenameFile}>
                 Rename
               </Button>
-              <Button variant="outlined" onClick={handleCloseRenameModal}>
+              <Button className="err-btn" variant="outlined" color="error" onClick={handleCloseRenameModal}>
                 Cancel
               </Button>
             </Stack>

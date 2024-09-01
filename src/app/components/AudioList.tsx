@@ -1,35 +1,9 @@
-"use client"
+"use client";
 
 import React from 'react';
-import { List, ListItemText, Box, IconButton, Typography } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { List, ListItemText, IconButton, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-
-// Custom styled component for list items
-const CustomListItem = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  padding: theme.spacing(1),
-  cursor: 'pointer',
-  '&:hover': {
-    backgroundColor: theme.palette.action.hover,
-  },
-}));
-
-// Container for list item content with 85% width
-const ListItemContent = styled(Box)(({ theme }) => ({
-  flex: '0 0 85%',
-  display: 'flex',
-  alignItems: 'center',
-}));
-
-// Edit button container with the remaining width
-const EditButtonContainer = styled(Box)(({ theme }) => ({
-  flex: '0 0 15%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'flex-end', // Align button to the right
-}));
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 interface AudioFile {
   title: string;
@@ -58,33 +32,51 @@ const formatDuration = (seconds: number) => {
 
 const AudioList: React.FC<AudioListProps> = ({ audioFiles, onSelect, currentAudio, onEdit }) => {
   return (
-    <List>
+    <List sx={{marginBottom:'100px'}}>
+      <div className="list-item-content" style={{ borderBottom: '0.01px solid white', paddingBottom: '10px', marginBottom: '10px' }}>
+        <ListItemText
+          primary={
+            <Typography style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Typography style={{ display: 'flex', flexDirection: 'row', marginLeft: '10px' }}>
+                <Typography> # </Typography>
+                <Typography style={{ marginLeft: '20px' }}>Title</Typography>
+              </Typography>
+              <Typography variant="body2" style={{ marginRight: '6%' }}>
+                <AccessTimeIcon />
+              </Typography>
+            </Typography>
+          }
+        />
+      </div>
       {audioFiles.map((file, index) => (
-        <CustomListItem
+        <div
           key={index}
-          sx={{
-            backgroundColor: currentAudio === file.src ? 'primary.main' : 'background.paper',
-            color: currentAudio === file.src ? 'green' : 'blue',
-          }}
+          className={`custom-list-item ${currentAudio === file.src ? 'selected-item' : ''}`}
+          onClick={() => onSelect(file.src)}
         >
-          <ListItemContent onClick={() => onSelect(file.src)}>
+          <div className="list-item-content">
             <ListItemText
               primary={
-                <Typography>
-                  {file.title}
-                  <Typography variant="body2" color="textSecondary">
+                <Typography style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Typography style={{ display: 'flex', flexDirection: 'row' }}>
+                    {index + 1} . {" "}
+                    <Typography style={{ marginLeft: '10px' }}>
+                      {file.title}
+                    </Typography>
+                  </Typography>
+                  <Typography variant="body2">
                     {formatDuration(file.duration)}
                   </Typography>
                 </Typography>
               }
             />
-          </ListItemContent>
-          <EditButtonContainer>
+          </div>
+          <div className="edit-button-container">
             <IconButton onClick={() => onEdit(file)}>
-              <EditIcon />
+              <EditIcon className="edit-icon" />
             </IconButton>
-          </EditButtonContainer>
-        </CustomListItem>
+          </div>
+        </div>
       ))}
     </List>
   );
