@@ -55,7 +55,7 @@ const Home = () => {
         src: URL.createObjectURL(file),
         image: '/images/default_audio_image.jpg',  // Default image for uploaded files
       }));
-      setUploadedFiles(prevFiles => [...prevFiles, ...newFiles]);
+      // setUploadedFiles(prevFiles => [...prevFiles, ...newFiles]);
       handleCloseModal();
     }
   };
