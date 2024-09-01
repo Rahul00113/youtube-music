@@ -7,7 +7,6 @@ import AudioGrid from '@/app/components/AudioGrid';
 import ToggleViewButton from '@/app/components/ToggleViewButton';
 import { Container, Box, Modal, Typography, IconButton, Button, Stack, TextField } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
 
 const audioFiles = [
   { title: 'God Damn', src: '/audio/god_damn.mp3', image: '/images/god_damn.jpg', duration: 233.534694 },
@@ -22,13 +21,16 @@ const Home = () => {
   const [uploadedFiles, setUploadedFiles] = useState(audioFiles);
   const [selectedFile, setSelectedFile] = useState<{ title: string; src: string } | null>(null);
   const [newFileName, setNewFileName] = useState('');
-  const storedFiles = JSON.parse(localStorage.getItem('audioFiles') || '[]');
-
+  
   useEffect(() => {
-    if (storedFiles.length === 0) {
-      localStorage.setItem('audioFiles', JSON.stringify(audioFiles));
+    if(typeof window !== 'undefined'){
+      const storedFiles = JSON.parse(localStorage.getItem('audioFiles') || '[]');
+      
+      if (storedFiles.length === 0) {
+        localStorage.setItem('audioFiles', JSON.stringify(audioFiles));
+      }
+      setUploadedFiles(storedFiles);
     }
-    setUploadedFiles(storedFiles);
   }, [JSON.stringify(storedFiles)]);
 
   const handleToggleView = () => setIsGridView(!isGridView);
@@ -77,7 +79,6 @@ const Home = () => {
             image: '/images/Tauba.jpg',
             duration: duration,
           };
-
           const updatedFiles = [...uploadedFiles, newFile];
           localStorage.setItem('audioFiles', JSON.stringify(updatedFiles));
           setUploadedFiles(updatedFiles);
