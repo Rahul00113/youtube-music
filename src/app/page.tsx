@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AudioPlayer from '@/app/components/AudioPlayer';
 import AudioList from '@/app/components/AudioList';
 import AudioGrid from '@/app/components/AudioGrid';
@@ -8,21 +8,25 @@ import ToggleViewButton from '@/app/components/ToggleViewButton';
 import { Container, Box, Modal, Typography, IconButton, Button, Stack, TextField } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 
+
+const audioFiles = [
+  { title: 'God Damn', src: '/audio/god_damn.mp3', image: '/images/god_damn.jpg' , duration: 233.534694},
+  { title: 'Tauba Tauba', src: '/audio/Tauba.mp3', image: '/images/Tauba.jpg' , duration: 228.675918 }
+];
 const Home = () => {
+  const storedFiles = JSON.parse(localStorage.getItem('audioFiles') || '[]');
   const [isGridView, setIsGridView] = useState(false);
   const [currentAudio, setCurrentAudio] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [uploadedFiles, setUploadedFiles] = useState(audioFiles);
+  console.log('........storedFiles......', storedFiles)
+  useEffect(() => {
+    if (storedFiles?.length == 0) {
+      localStorage.setItem('audioFiles', JSON.stringify(audioFiles));
+    }
+    setUploadedFiles(storedFiles)
+  }, [JSON.stringify(storedFiles)])
 
-  const audioFiles = [
-    { title: 'God Damn', src: '/audio/god_damn.mp3', image: '/images/god_damn.jpg' },
-    { title: 'Tauba Tauba', src: '/audio/Tauba.mp3', image: '/images/Tauba.jpg' },
-    { title: 'Like A Snake', src: '/audio/god_damn.mp3', image: '/images/god_damn.jpg' },
-    { title: 'Bajre Da', src: '/audio/god_damn.mp3', image: '/images/god_damn.jpg' },
-    { title: 'Hola At Your Boy', src: '/audio/god_damn.mp3', image: '/images/god_damn.jpg' },
-    { title: 'Surma', src: '/audio/god_damn.mp3', image: '/images/god_damn.jpg' },
-    { title: 'Red And Blue', src: '/audio/god_damn.mp3', image: '/images/god_damn.jpg' }
-  ];
 
   const handleToggleView = () => setIsGridView(!isGridView);
 
@@ -47,16 +51,30 @@ const Home = () => {
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
-      const newFiles = Array.from(files).map(file => ({
-        title: file.name,
-        src: URL.createObjectURL(file),
-        image: '/images/default_audio_image.jpg',  // Default image for uploaded files
-      }));
-      // setUploadedFiles(prevFiles => [...prevFiles, ...newFiles]);
-      handleCloseModal();
+      const file = files[0];
+      try {
+        const audio = new Audio(URL.createObjectURL(file));
+        audio.onloadedmetadata = () => {
+          const duration = audio.duration;  // Duration in seconds
+
+          const newFile = {
+            title: file.name,
+            src: URL.createObjectURL(file),
+            image: '/images/Tauba.jpg',  // Default image for uploaded files
+            duration: duration,  // Add duration to the file object
+          };
+          // Save to localStorage
+          localStorage.setItem('audioFiles', JSON.stringify([...storedFiles, newFile]));
+          console.log('.......file......', file)
+          setUploadedFiles(prevFiles => [...prevFiles, newFile]);
+          handleCloseModal();
+        }
+      } catch (error) {
+        console.error('Error uploading file:', error);
+      }
     }
   };
 
@@ -73,9 +91,9 @@ const Home = () => {
         <ToggleViewButton onToggle={handleToggleView} isGridView={isGridView} />
         {/* Audio List or Grid */}
         {isGridView ? (
-          <AudioGrid audioFiles={audioFiles} onSelect={handleAudioSelect} currentAudio={currentAudio} />
+          <AudioGrid audioFiles={uploadedFiles} onSelect={handleAudioSelect} currentAudio={currentAudio} />
         ) : (
-          <AudioList audioFiles={audioFiles} onSelect={handleAudioSelect} currentAudio={currentAudio} />
+          <AudioList audioFiles={uploadedFiles} onSelect={handleAudioSelect} currentAudio={currentAudio} />
         )}
         {/* Audio Player */}
         {currentAudio && (
@@ -89,15 +107,15 @@ const Home = () => {
       </Box>
       {/* Modal for Uploading Audio Files */}
       <Modal open={isModalOpen} onClose={handleCloseModal}>
-        <Box sx={{ 
-          position: 'absolute', 
-          top: '50%', 
-          left: '50%', 
-          transform: 'translate(-50%, -50%)', 
-          bgcolor: 'background.paper', 
-          boxShadow: 24, 
-          p: 4, 
-          width: 400 
+        <Box sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+          p: 4,
+          width: 400
         }}>
           <Typography variant="h6" component="h2">
             Upload Audio File

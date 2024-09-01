@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, ListItemText, Box } from '@mui/material';
+import { List, ListItemText, Box, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 // Custom styled component
@@ -13,11 +13,29 @@ const CustomListItem = styled(Box)(({ theme }) => ({
   },
 }));
 
+interface AudioFile {
+  title: string;
+  src: string;
+  duration: number;  // Duration in seconds
+}
+
 interface AudioListProps {
-  audioFiles: { title: string; src: string }[];
+  audioFiles: AudioFile[];
   onSelect: (src: string) => void;
   currentAudio: string;
 }
+
+const formatDuration = (seconds: number) => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+
+  const hoursStr = hours > 0 ? `${hours}:` : '';
+  const minutesStr = hours > 0 ? String(minutes).padStart(2, '0') : minutes;
+  const secondsStr = String(secs).padStart(2, '0');
+
+  return `${hoursStr}${minutesStr}:${secondsStr}`;
+};
 
 const AudioList: React.FC<AudioListProps> = ({ audioFiles, onSelect, currentAudio }) => {
   return (
@@ -28,10 +46,19 @@ const AudioList: React.FC<AudioListProps> = ({ audioFiles, onSelect, currentAudi
           onClick={() => onSelect(file.src)}
           sx={{
             backgroundColor: currentAudio === file.src ? 'primary.main' : 'background.paper',
-            color: currentAudio === file.src ? '#fff' : 'inherit',
+            color: currentAudio === file.src ? 'green' : 'blue',
           }}
         >
-          <ListItemText primary={file.title} />
+          <ListItemText
+            primary={
+              <Typography>
+                {file.title}
+                <Typography variant="body2" color="textSecondary">
+                  {formatDuration(file.duration)}
+                </Typography>
+              </Typography>
+            }
+          />
         </CustomListItem>
       ))}
     </List>
