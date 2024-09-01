@@ -29,8 +29,9 @@ const Home = () => {
       const storedFiles = JSON.parse(localStorage.getItem('audioFiles') || '[]');
       if (storedFiles.length === 0) {
         localStorage.setItem('audioFiles', JSON.stringify(audioFiles));
+        return storedFiles;
       }
-      return storedFiles;
+      return audioFiles;
     }
     return [];
   };
